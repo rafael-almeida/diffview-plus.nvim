@@ -977,7 +977,19 @@ return function(view)
       view.panel:redraw()
 
       if view.cur_entry == item and view.cur_layout then
+        if view.ribbon then
+          view.ribbon:begin_swap(true)
+        end
         await(view.cur_layout:use_entry(item))
+        local in_flight = view:set_file_in_flight()
+        if
+          view.ribbon
+          and not view.closing:check()
+          and view:is_cur_tabpage()
+          and (not in_flight or in_flight:is_done())
+        then
+          view.ribbon:commit()
+        end
       end
     end),
     toggle_untracked = function()

@@ -85,6 +85,9 @@ end
 function FileHistoryView:close()
   if not self.closing:check() then
     self.closing:send()
+    if self.ribbon then
+      self.ribbon:stop()
+    end
 
     -- Cancel any pending debounced fire so a `CursorMoved` that already
     -- queued a `vim.schedule` callback can't run after teardown begins.
@@ -536,6 +539,9 @@ end)
 ---@return boolean
 function FileHistoryView:file_safeguard()
   if self.panel:num_items() == 0 then
+    if self.ribbon then
+      self.ribbon:begin_swap(false)
+    end
     local cur = self.panel.cur_item[2]
 
     if cur then

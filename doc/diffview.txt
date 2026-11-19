@@ -1124,6 +1124,28 @@ view.winfixbuf                                  *diffview-config-view.winfixbuf*
         Off by default. When enabled it also applies to the null
         placeholder window shown for files whose buffer failed to load.
 
+view.ribbon                                      *diffview-config-view.ribbon*
+        Type: `false|diffview.RibbonAdapter`, Default: `false`
+
+        Add a dedicated center gutter to `diff2_horizontal` in diff and
+        file history views. The renderer requires Neovim 0.12 or newer.
+        With Ribbonview on 'runtimepath': >lua
+            local ribbonview = require("ribbonview")
+            ribbonview.setup({ renderer = "auto", width = 6 })
+            require("diffview").setup({
+              view = { ribbon = ribbonview.diffview_adapter() },
+            })
+<
+        Diffview+ temporarily removes `filler` and `linematch` from the
+        global 'diffopt' while the gutter is active. This affects other
+        diff windows and can change native hunk alignment. Leaving the
+        tab restores the original value. An external 'diffopt' change
+        pauses the gutter and becomes the new baseline.
+
+        Unsupported layouts, incompatible comparisons, and narrow views
+        use the ordinary diff layout. Closing the gutter by hand dismisses
+        it until you reenter the tab or refresh Ribbonview.
+
                                                 *diffview-config-view.one_sided_layout*
 view.one_sided_layout
         Type: `"default"|"raw"`, Default: `"default"`

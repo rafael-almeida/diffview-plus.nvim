@@ -496,6 +496,9 @@ function DiffView:close(opts)
 
   if not self.closing:check() then
     self.closing:send()
+    if self.ribbon then
+      self.ribbon:stop()
+    end
 
     -- Final save and clean up the debounced handle.
     if self._save_selections then
@@ -1085,6 +1088,9 @@ end
 ---@return boolean
 function DiffView:file_safeguard()
   if self.files:len() == 0 then
+    if self.ribbon then
+      self.ribbon:begin_swap(false)
+    end
     local cur = self.panel.cur_file
 
     if cur then

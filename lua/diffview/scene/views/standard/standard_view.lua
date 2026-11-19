@@ -94,6 +94,13 @@ function StandardView:init(opt)
   self.nulled = utils.sate(opt.nulled, false)
   self.panel = opt.panel or Panel()
   self.layouts = opt.layouts or {}
+  local adapter = config.get_config().view.ribbon
+  if adapter and vim.fn.has("nvim-0.12") == 1 then
+    self.ribbon = require("diffview.scene.ribbon").new(self, adapter)
+    self.emitter:on("tab_enter", function()
+      self.ribbon:start()
+    end)
+  end
   self.winopts = opt.winopts
     or {
       diff1 = { a = {} },
@@ -433,6 +440,9 @@ end
 ---Ensure both left and right windows exist in the view's tabpage.
 function StandardView:ensure_layout()
   if self.cur_layout then
+    if self.ribbon and not self.cur_layout:is_valid() then
+      self.ribbon:release()
+    end
     self.cur_layout:ensure()
   else
     self:init_layout()
@@ -706,6 +716,9 @@ StandardView._drain_set_file_pending = async.void(function(self)
     self.panel:redraw()
     vim.cmd("redraw")
 
+    if self.ribbon then
+      self.ribbon:begin_swap(target.layout.class == self.cur_layout.class)
+    end
     self:_detach_files_for_next(target)
     local cur_entry = self.cur_entry
     self.emitter:emit("file_open_pre", target, cur_entry)
@@ -734,6 +747,9 @@ StandardView._drain_set_file_pending = async.void(function(self)
     if not self.cur_entry.opened then
       self.cur_entry.opened = true
       DiffviewGlobal.emitter:emit("file_open_new", target)
+    end
+    if self.ribbon and not self._set_file_pending then
+      self.ribbon:commit()
     end
   end
   self._set_file_in_flight = nil
