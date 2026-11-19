@@ -1125,26 +1125,29 @@ view.winfixbuf                                  *diffview-config-view.winfixbuf*
         placeholder window shown for files whose buffer failed to load.
 
 view.ribbon                                      *diffview-config-view.ribbon*
-        Type: `false|diffview.RibbonAdapter`, Default: `false`
+        Type: `table`
 
-        Add a dedicated center gutter to `diff2_horizontal` in diff and
-        file history views. The renderer requires Neovim 0.12 or newer.
-        With Ribbonview on 'runtimepath': >lua
-            local ribbonview = require("ribbonview")
-            ribbonview.setup({ renderer = "auto", width = 6 })
+        Add a built-in center gutter to `diff2_horizontal` in diff and file
+        history views. Ribbons require Neovim 0.12 or newer. >lua
             require("diffview").setup({
-              view = { ribbon = ribbonview.diffview_adapter() },
+              view = { ribbon = { enabled = true } },
             })
 <
-        Diffview+ temporarily removes `filler` and `linematch` from the
-        global 'diffopt' while the gutter is active. This affects other
-        diff windows and can change native hunk alignment. Leaving the
-        tab restores the original value. An external 'diffopt' change
-        pauses the gutter and becomes the new baseline.
+        `enabled` defaults to `false`. `width` defaults to six columns and
+        accepts integers from 1 to 8. `renderer` accepts `"auto"` (the
+        default), `"kitty"`, or `"cells"`. Both `"auto"` and `"kitty"`
+        fall back to cells when graphics are unavailable. Set `cell_px`
+        to `{ width, height }` to override the estimated terminal cell
+        dimensions used for Kitty graphics.
+
+        The source panes keep their native diff highlights, filler rows,
+        hunk actions, and folds. Ribbon positions follow the effective
+        'diffopt', including `linematch`. Insertions underline the preceding
+        left line. Deletions underline the preceding right line.
 
         Unsupported layouts, incompatible comparisons, and narrow views
         use the ordinary diff layout. Closing the gutter by hand dismisses
-        it until you reenter the tab or refresh Ribbonview.
+        it until you reenter the tab.
 
                                                 *diffview-config-view.one_sided_layout*
 view.one_sided_layout

@@ -101,41 +101,9 @@ local function apply_diffopt(view)
   set_diffopt_parts(parts)
 end
 
----Remove filler (including implicit filler from linematch) from the active profile.
----@param enable boolean
----@return boolean owned Whether diffopt still matches the ribbon profile.
-local function set_ribbon_diffopt(view, enable)
-  local profile = view._ribbon_diffopt
-  if profile then
-    local owned = vim.o.diffopt == profile.applied
-    if not enable then
-      view._ribbon_diffopt = nil
-      if not owned then
-        -- An explicit external write supplies a new baseline for the entire option.
-        view._saved_diffopt = nil
-      elseif profile.before ~= profile.applied then
-        vim.o.diffopt = profile.before
-      end
-    end
-    return owned
-  elseif enable then
-    local before = vim.o.diffopt
-    local parts = get_diffopt_parts()
-    strip_exact(parts, "filler")
-    strip_prefix(parts, "linematch:")
-    local applied = table.concat(parts, ",")
-    view._ribbon_diffopt = { before = before, applied = applied }
-    if before ~= applied then
-      vim.o.diffopt = applied
-    end
-  end
-  return true
-end
-
 ---Restore the original diffopt value from the view.
 ---@param view View
 local function restore_diffopt(view)
-  set_ribbon_diffopt(view, false)
   if view._saved_diffopt then
     set_diffopt_parts(view._saved_diffopt)
     view._saved_diffopt = nil
@@ -158,8 +126,7 @@ local LayoutMode = oop.enum({
 ---@field ready boolean
 ---@field closing Signal
 ---@field _saved_diffopt string[]? Per-view saved diffopt value before overrides.
----@field _ribbon_diffopt { before: string, applied: string }?
----@field ribbon diffview.Ribbon? Renderer host for opted-in standard views.
+---@field ribbon diffview.Ribbon? Gutter renderer for opted-in standard views.
 ---@field _global_callbacks table<any, function> # Callbacks registered on the global emitter, keyed by event.
 local View = oop.create_class("View")
 
@@ -272,12 +239,6 @@ end
 
 function View:is_cur_tabpage()
   return self.tabpage == api.nvim_get_current_tabpage()
-end
-
----@param enable boolean
----@return boolean
-function View:set_ribbon_diffopt(enable)
-  return set_ribbon_diffopt(self, enable)
 end
 
 ---@return boolean

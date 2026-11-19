@@ -94,9 +94,9 @@ function StandardView:init(opt)
   self.nulled = utils.sate(opt.nulled, false)
   self.panel = opt.panel or Panel()
   self.layouts = opt.layouts or {}
-  local adapter = config.get_config().view.ribbon
-  if adapter and vim.fn.has("nvim-0.12") == 1 then
-    self.ribbon = require("diffview.scene.ribbon").new(self, adapter)
+  local ribbon = config.get_config().view.ribbon
+  if ribbon.enabled and vim.fn.has("nvim-0.12") == 1 then
+    self.ribbon = require("diffview.scene.ribbon").new(self, ribbon)
     self.emitter:on("tab_enter", function()
       self.ribbon:start()
     end)
